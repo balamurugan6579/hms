@@ -25,4 +25,6 @@ dist-ssr
 admin_pass.txt
 jenkins_logs.txt
 .env
-.env.local
+.env.*
+!.env.example
+!.env.*.example
