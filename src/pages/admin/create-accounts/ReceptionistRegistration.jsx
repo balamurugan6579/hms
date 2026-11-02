@@ -63,6 +63,18 @@ export default function ReceptionistRegistration() {
             }
 
             if (data.user) {
+                const { error: profileError } = await supabase.from('profiles').upsert({
+                    id: data.user.id,
+                    user_id: data.user.id,
+                    name: formData.name,
+                    full_name: formData.name,
+                    email: formData.email,
+                    phone: formData.phone,
+                    role: 'receptionist'
+                }, { onConflict: 'user_id' });
+
+                if (profileError) throw profileError;
+
                 const { error: staffError } = await supabase.from('staff').upsert({
                     id: data.user.id,
                     name: formData.name,

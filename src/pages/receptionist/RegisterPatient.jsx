@@ -3,7 +3,6 @@ import { useState } from "react";
 import Layout from "../../components/Layout";
 import { createClient } from "@supabase/supabase-js";
 import { User, Activity, FileText, Upload, Save, AlertCircle } from "lucide-react";
-import { supabase } from "../../lib/supabase"; // Use the main client for DB inserts
 
 export default function RegisterPatient() {
     const [loading, setLoading] = useState(false);
@@ -54,7 +53,15 @@ export default function RegisterPatient() {
                 options: {
                     data: {
                         displayName: formData.name,
-                        role: 'patient'
+                        role: 'patient',
+                        phone: formData.phone,
+                        address: formData.address,
+                        gender: formData.gender.toLowerCase(),
+                        date_of_birth: `${new Date().getFullYear() - parseInt(formData.age || 20)}-01-01`,
+                        blood_group: formData.bloodGroup,
+                        medical_history: formData.medicalHistory,
+                        allergies: formData.allergies,
+                        emergency_contact: formData.emergencyContact
                     }
                 }
             });
@@ -62,37 +69,6 @@ export default function RegisterPatient() {
             if (authError) throw authError;
 
             if (authData.user) {
-                // 3. Create Profile (Public)
-                const { error: profileError } = await supabase.from('profiles').upsert({
-                    user_id: authData.user.id, // Auth ID goes here
-                    full_name: formData.name,
-                    email: formData.email,
-                    role: 'patient'
-                });
-
-                if (profileError) throw profileError;
-
-                // 4. Create Patient Record (Private)
-                const { error: patientError } = await supabase.from('patients').upsert({
-                    user_id: authData.user.id, // Auth ID goes here, let DB generate 'id'
-                    full_name: formData.name,
-                    date_of_birth: `${new Date().getFullYear() - parseInt(formData.age || 20)}-01-01`, // Approx DOB from Age
-                    gender: formData.gender.toLowerCase(),
-                    phone: formData.phone,
-                    address: formData.address,
-                    blood_group: formData.bloodGroup,
-                    medical_history: formData.medicalHistory,
-                    allergies: formData.allergies,
-                    emergency_contact: formData.emergencyContact,
-                    patient_type: 'permanent',
-                    email: formData.email
-                });
-
-                if (patientError) throw patientError;
-
-
-                if (patientError) throw patientError;
-
                 console.log('Registered successfully:', formData.email);
                 setLastRegisteredEmail(formData.email);
                 setSuccess(true);

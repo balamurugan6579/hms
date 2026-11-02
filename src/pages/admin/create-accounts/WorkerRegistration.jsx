@@ -79,6 +79,18 @@ export default function WorkerRegistration() {
             }
 
             if (data.user) {
+                const { error: profileError } = await supabase.from('profiles').upsert({
+                    id: data.user.id,
+                    user_id: data.user.id,
+                    name: formData.name,
+                    full_name: formData.name,
+                    email: generatedEmail,
+                    phone: formData.phone,
+                    role: 'worker'
+                }, { onConflict: 'user_id' });
+
+                if (profileError) throw profileError;
+
                 const { error: workerError } = await supabase.from('workers').upsert({
                     id: data.user.id,
                     name: formData.name,

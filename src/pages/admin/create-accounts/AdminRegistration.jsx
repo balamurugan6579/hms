@@ -57,7 +57,17 @@ export default function AdminRegistration() {
             }
 
             if (data.user) {
-                // 2. Create Admin Record (Skip Profile)
+                const { error: profileError } = await supabase.from('profiles').upsert({
+                    id: data.user.id,
+                    user_id: data.user.id,
+                    name: formData.name,
+                    full_name: formData.name,
+                    email: formData.email,
+                    role: 'admin'
+                }, { onConflict: 'user_id' });
+
+                if (profileError) throw profileError;
+
                 const { error: adminError } = await supabase.from('admins').upsert({
                     id: data.user.id,
                     name: formData.name,

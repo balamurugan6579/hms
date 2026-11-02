@@ -83,7 +83,11 @@ export default function PatientsList() {
                 options: {
                     data: {
                         displayName: newPatient.full_name,
-                        role: 'patient'
+                        role: 'patient',
+                        phone: newPatient.phone,
+                        date_of_birth: newPatient.date_of_birth,
+                        gender: newPatient.gender.toLowerCase(),
+                        medical_history: newPatient.medical_history
                     }
                 }
             });
@@ -103,7 +107,7 @@ export default function PatientsList() {
                 if (profileError) throw profileError;
 
                 // 4. Create Patient Record
-                const { error: patientError } = await supabase.from('patients').insert({
+                const { error: patientError } = await supabase.from('patients').upsert({
                     user_id: userId,
                     full_name: newPatient.full_name,
                     phone: newPatient.phone,
@@ -112,7 +116,7 @@ export default function PatientsList() {
                     email: newPatient.email,
                     medical_history: newPatient.medical_history,
                     patient_type: 'permanent'
-                });
+                }, { onConflict: 'user_id' });
                 if (patientError) throw patientError;
 
                 alert("Patient created successfully!");

@@ -33,7 +33,7 @@ export default function BookAppointment() {
     useEffect(() => {
         const load = async () => {
             // Fetch ONLY PERMANENT patients (with user_id)
-            const { data: p } = await supabase.from('patients').select('id, full_name, email').not('user_id', 'is', null).order('full_name');
+            const { data: p } = await supabase.from('patient_directory').select('id, full_name, email').not('user_id', 'is', null).order('full_name');
             // Fetch doctors from DOCTORS table
             const { data: d } = await supabase
                 .from('doctors')
@@ -94,7 +94,10 @@ export default function BookAppointment() {
                     options: {
                         data: {
                             displayName: tempPatient.full_name,
-                            role: 'patient'
+                            role: 'patient',
+                            phone: tempPatient.phone,
+                            gender: tempPatient.gender.toLowerCase(),
+                            date_of_birth: `${new Date().getFullYear() - parseInt(tempPatient.age || 25)}-01-01`
                         }
                     }
                 });
@@ -103,27 +106,6 @@ export default function BookAppointment() {
 
                 if (authData.user) {
                     finalPatientId = authData.user.id;
-
-                    // 3. Create Profile
-                    const { error: profileError } = await supabase.from('profiles').upsert({
-                        user_id: finalPatientId,
-                        full_name: tempPatient.full_name,
-                        email: tempPatient.email,
-                        role: 'patient'
-                    });
-                    if (profileError) throw profileError;
-
-                    // 4. Create Patient Record
-                    const { error: patientError } = await supabase.from('patients').upsert({
-                        user_id: finalPatientId,
-                        full_name: tempPatient.full_name,
-                        phone: tempPatient.phone,
-                        date_of_birth: `${new Date().getFullYear() - parseInt(tempPatient.age || 25)}-01-01`,
-                        gender: tempPatient.gender.toLowerCase(),
-                        email: tempPatient.email,
-                        patient_type: 'permanent'
-                    });
-                    if (patientError) throw patientError;
                 }
             }
             // CASE 2: New Temporary Patient (No Auth, No Profile, just Patient record with NULL user_id)

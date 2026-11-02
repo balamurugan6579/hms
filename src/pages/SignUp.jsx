@@ -9,7 +9,7 @@ export default function SignUp() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [name, setName] = useState("");
-    const [role, setRole] = useState("patient");
+    const role = "patient";
     const [specialization, setSpecialization] = useState("");
     const [error, setError] = useState("");
     const { signUp } = useAuth();
@@ -105,12 +105,9 @@ export default function SignUp() {
                             className="w-full p-4 bg-white/5 dark:bg-slate-900 border-2 border-gray-200 dark:border-white/10 rounded-lg text-lg focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/20 outline-none transition-all dark:text-white"
                             style={{ colorScheme: theme === 'dark' ? 'dark' : 'light' }}
                             value={role}
-                            onChange={(e) => setRole(e.target.value)}
+                            disabled
                         >
                             <option value="patient">Patient</option>
-                            <option value="coworker">Staff (Co-Worker)</option>
-                            <option value="doctor">Doctor</option>
-                            <option value="admin">Admin</option>
                         </select>
                     </div>
                     {role === 'doctor' && (

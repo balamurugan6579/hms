@@ -26,7 +26,7 @@ export default function Billing() {
     }, [selectedPatient]);
 
     const fetchData = async () => {
-        const { data: pData } = await supabase.from('patients').select('*').order('full_name');
+        const { data: pData } = await supabase.from('patient_directory').select('*').order('full_name');
         if (pData) setPatients(pData);
 
         const { data: mData } = await supabase.from('medicines').select('*').gt('stock_quantity', 0).order('medicine_name');

@@ -46,10 +46,10 @@ export const AuthProvider = ({ children }) => {
             }
 
             // Check DOCTORS table
-            let { data: doctor } = await supabase.from('doctors').select('id, name').eq('id', userId).maybeSingle();
+            let { data: doctor } = await supabase.from('doctors').select('id, name, full_name').eq('user_id', userId).maybeSingle();
             if (doctor) {
                 setRole('doctor');
-                setUserName(doctor.name);
+                setUserName(doctor.name || doctor.full_name);
                 return;
             }
 
@@ -62,10 +62,10 @@ export const AuthProvider = ({ children }) => {
             }
 
             // Check PATIENTS table
-            let { data: patient } = await supabase.from('patients').select('id, name').eq('id', userId).maybeSingle();
+            let { data: patient } = await supabase.from('patients').select('id, name, full_name').eq('user_id', userId).maybeSingle();
             if (patient) {
                 setRole('patient');
-                setUserName(patient.name);
+                setUserName(patient.name || patient.full_name);
                 return;
             }
 
@@ -77,17 +77,21 @@ export const AuthProvider = ({ children }) => {
                 return;
             }
 
-            // FALLBACK TO AUTH META (Last Resort)
-            const { data: { user } } = await supabase.auth.getUser();
-            if (user && user.user_metadata?.role) {
-                console.log("Role found in metadata:", user.user_metadata.role);
-                setRole(user.user_metadata.role);
-                setUserName(user.user_metadata.displayName || user.email.split('@')[0]);
+            // Roles come from the database, never from user-editable auth metadata.
+            const { data: profile, error: profileError } = await supabase
+                .from('profiles')
+                .select('role, name, full_name')
+                .eq('id', userId)
+                .maybeSingle();
 
-                // OPTIONAL: Auto-create record in specific table if missing? 
-                // For now, let's just allow access based on metadata to unblock login.
+            if (profileError) throw profileError;
+
+            const allowedRoles = ['admin', 'doctor', 'receptionist', 'patient', 'worker', 'staff'];
+            if (profile && allowedRoles.includes(profile.role)) {
+                setRole(profile.role === 'staff' ? 'receptionist' : profile.role);
+                setUserName(profile.name || profile.full_name);
             } else {
-                console.error("Role not found in any table or metadata");
+                console.error("Role not found in an authorized account record");
                 setRole(null);
             }
 
@@ -109,36 +113,24 @@ export const AuthProvider = ({ children }) => {
     };
 
     const signUp = async (email, password, name, role, specialization = null, phone = null, address = null) => {
-        // 1. Sign up auth user
-        const { data, error } = await supabase.auth.signUp({
+        if (role !== 'patient') {
+            throw new Error('Only patient self-registration is available. Staff accounts must be provisioned by an administrator.');
+        }
+
+        const { error } = await supabase.auth.signUp({
             email,
             password,
             options: {
                 data: {
                     displayName: name,
-                    role: role, // Still store in metadata as backup
-                    specialization: specialization
+                    role: 'patient',
+                    specialization,
+                    phone,
+                    address
                 }
             }
         });
         if (error) throw error;
-
-        // 2. Insert into Specific Table based on Role
-        if (data.user) {
-            const userId = data.user.id;
-
-            if (role === 'admin') {
-                await supabase.from('admins').insert([{ id: userId, name, email }]);
-            } else if (role === 'doctor') {
-                await supabase.from('doctors').insert([{ id: userId, name, email, specialization, address }]);
-            } else if (role === 'receptionist') {
-                await supabase.from('staff').insert([{ id: userId, name, email, role: 'Receptionist', phone, address, salary: 0 }]);
-            } else if (role === 'patient') {
-                await supabase.from('patients').insert([{ id: userId, name, phone, address, medical_history: 'New Patient' }]);
-            } else if (role === 'worker') {
-                await supabase.from('workers').insert([{ id: userId, name, role: 'General', email, phone, address }]);
-            }
-        }
     };
 
     const logout = async () => {

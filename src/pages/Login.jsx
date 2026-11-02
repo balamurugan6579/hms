@@ -25,7 +25,11 @@ export default function Login() {
             // Auth wrapper handles redirect based on role
             navigate("/");
         } catch (err) {
-            setError(err.message || "Failed to log in. Check email/password.");
+            setError(
+                err instanceof TypeError && err.message === "Failed to fetch"
+                    ? "Can't reach Supabase. Check that the project is active and VITE_SUPABASE_URL in .env is correct."
+                    : err.message || "Failed to log in. Check email/password."
+            );
             console.error(err);
         } finally {
             setLoading(false);
