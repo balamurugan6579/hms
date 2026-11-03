@@ -28,3 +28,16 @@ jenkins_logs.txt
 .env.*
 !.env.example
 !.env.*.example
+
+# Local credentials and key material
+.secrets*
+*.secret
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+credentials.json
+service-account*.json
+secrets.json

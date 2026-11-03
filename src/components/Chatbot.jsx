@@ -2,8 +2,6 @@ import { useState, useRef, useEffect } from 'react';
 import { MessageCircle, X, Send, Bot, Languages } from 'lucide-react';
 
 export default function Chatbot() {
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    const supabaseKey = import.meta.env.VITE_SUPABASE_KEY;
     const [isOpen, setIsOpen] = useState(false);
     const [language, setLanguage] = useState('english'); // 'english' or 'tamil'
     const [messages, setMessages] = useState([

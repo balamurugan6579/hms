@@ -5,18 +5,6 @@ import { User, AlertCircle, ArrowLeft, Camera, CheckCircle } from "lucide-react"
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../../lib/supabase";
 
-const getClient = () => {
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    const supabaseAnonKey = localStorage.getItem('supabase_key') || import.meta.env.VITE_SUPABASE_KEY;
-    return createClient(supabaseUrl, supabaseAnonKey, {
-        auth: {
-            persistSession: false,
-            autoRefreshToken: false,
-            detectSessionInUrl: false
-        }
-    });
-};
-
 export default function WorkerRegistration() {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
