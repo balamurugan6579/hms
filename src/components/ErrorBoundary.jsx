@@ -32,13 +32,13 @@ class ErrorBoundary extends React.Component {
                 Reload Page
               </button>
               <button
-                onClick={() => window.location.href = '/'}
+                onClick={() => window.location.href = `${import.meta.env.BASE_URL}#/`}
                 className="flex-1 bg-gray-200 dark:bg-white/10 text-gray-900 dark:text-white px-6 py-3 rounded-xl font-bold hover:bg-gray-300 dark:hover:bg-white/20 transition-all"
               >
                 Go Home
               </button>
             </div>
-            {process.env.NODE_ENV === 'development' && (
+            {import.meta.env.DEV && (
               <pre className="mt-6 p-4 bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 text-xs text-left rounded-xl overflow-auto max-h-40">
                 {this.state.error?.toString()}
               </pre>
